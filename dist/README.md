@@ -107,3 +107,28 @@ The above example has two tags: "tag1" and "tag2". If a `TimeEnd` field is
 present, the annotation will be shown over a period of time. You can also
 separate the data path with commas to provide multiple data paths as shown with
 both server1 and server2.
+
+# Development Setup
+
+## Using docker as build environment
+
+Clone the repo in some directory e.g.
+
+/grafana_plugin_dir/grafana/plugins/graphql-datasource
+
+Start a grafana docker image and mount this directory to /var/lib/grafana 
+
+Now use a 'node' docker image for development
+
+````
+docker run -it -v /grafana_plugin_dir/grafana/plugins/graphql-datasource:/code node /bin/bash   
+````
+
+### Building
+
+inside the container
+
+````
+cd /code
+yarn dev
+````
