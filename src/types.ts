@@ -5,6 +5,7 @@ export interface MyQuery extends DataQuery {
   dataPath: string;
   groupBy: string;
   aliasBy: string;
+  mapFunction: string;
   annotationTitle: string;
   annotationText: string;
   annotationTags: string;

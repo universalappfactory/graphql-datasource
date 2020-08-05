@@ -34,9 +34,14 @@ export class QueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, aliasBy: event.target.value });
   };
 
+  onMapFunctionTextChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onChange, query } = this.props;
+    onChange({ ...query, mapFunction: event.target.value });
+  };
+
   render() {
     const query = defaults(this.props.query, defaultQuery);
-    const { queryText, dataPath, groupBy, aliasBy } = query;
+    const { queryText, dataPath, groupBy, aliasBy, mapFunction } = query;
 
     return (
       <>
@@ -69,6 +74,16 @@ export class QueryEditor extends PureComponent<Props, State> {
             onChange={this.onAliasByTextChange}
             label="Alias by"
             tooltip="The formattable text to alias by. Use $field_<field name> to replace with the value of a field, or $fieldName to replace with the name of the field"
+          />
+        </div>
+        <div className={'gf-form'}>
+          <LegacyForms.FormField
+            labelWidth={8}
+            inputWidth={24}
+            value={mapFunction || ''}
+            onChange={this.onMapFunctionTextChange}
+            label="Map function"
+            tooltip="A custom javascript function to map the resulting query document to a simple time-value object."
           />
         </div>
       </>

@@ -70,15 +70,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   private createQuery(query: MyQuery, range: TimeRange | undefined, scopedVars: ScopedVars | undefined = undefined) {
     let payload = query.queryText;
     if (range) {
-      payload = payload.replace(/\$timeFrom/g, range.from.valueOf().toString());
-      payload = payload.replace(/\$timeTo/g, range.to.valueOf().toString());
+      payload = payload.replace(/\$timeFrom/g, range.from.toISOString());
+      payload = payload.replace(/\$timeTo/g, range.to.toISOString());
     }
     payload = getTemplateSrv().replace(payload, scopedVars);
 
     //console.log(payload);
     return this.postQuery(query, payload);
   }
-  private static getDocs(resultsData: any, dataPath: string): any[] {
+  private static getDocs(resultsData: any, dataPath: string, mapFunction: string): any[] {
     if (!resultsData) {
       throw 'resultsData was null or undefined';
     }
@@ -102,7 +102,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
     const docs: any[] = [];
     let pushDoc = (originalDoc: object) => {
-      docs.push(flatten(originalDoc));
+      //
+      if (mapFunction && mapFunction !== '') {
+        const transform = new Function('input', mapFunction);
+        docs.push(transform(originalDoc));
+      } else {
+        docs.push(flatten(originalDoc));
+      }
     };
     if (Array.isArray(data)) {
       for (const element of data) {
@@ -136,7 +142,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       const dataFrameArray: DataFrame[] = [];
       for (let res of results) {
         const dataPathArray: string[] = DataSource.getDataPathArray(res.query.dataPath);
-        const { groupBy, aliasBy } = res.query;
+        const { groupBy, aliasBy, mapFunction } = res.query;
         const split = groupBy.split(',');
         const groupByList: string[] = [];
         for (const element of split) {
@@ -146,7 +152,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           }
         }
         for (const dataPath of dataPathArray) {
-          const docs: any[] = DataSource.getDocs(res.results.data, dataPath);
+          const docs: any[] = DataSource.getDocs(res.results.data, dataPath, mapFunction);
 
           const dataFrameMap = new Map<string, MutableDataFrame>();
           for (const doc of docs) {
@@ -157,6 +163,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             for (const groupByElement of groupByList) {
               identifiers.push(doc[groupByElement]);
             }
+
             const identifiersString = identifiers.toString();
             let dataFrame = dataFrameMap.get(identifiersString);
             if (!dataFrame) {
@@ -219,7 +226,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       for (const res of results) {
         const dataPathArray: string[] = DataSource.getDataPathArray(res.query.dataPath);
         for (const dataPath of dataPathArray) {
-          const docs: any[] = DataSource.getDocs(res.results.data, dataPath);
+          const { mapFunction } = res.query;
+          const docs: any[] = DataSource.getDocs(res.results.data, dataPath, mapFunction);
           for (const doc of docs) {
             const annotation: AnnotationEvent = {};
             if (doc.Time) {

@@ -1797,7 +1797,7 @@ module.exports = stubFalse;
 /*!******************************************!*\
   !*** ../node_modules/tslib/tslib.es6.js ***!
   \******************************************/
-/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1810,6 +1810,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__createBinding", function() { return __createBinding; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
@@ -1825,18 +1826,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldGet", function() { return __classPrivateFieldGet; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__classPrivateFieldSet", function() { return __classPrivateFieldSet; });
 /*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+Copyright (c) Microsoft Corporation.
 
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 /* global Reflect, Promise */
 
@@ -1929,8 +1930,13 @@ function __generator(thisArg, body) {
     }
 }
 
+function __createBinding(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}
+
 function __exportStar(m, exports) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 
 function __values(o) {
@@ -2227,8 +2233,8 @@ function (_super) {
     var payload = query.queryText;
 
     if (range) {
-      payload = payload.replace(/\$timeFrom/g, range.from.valueOf().toString());
-      payload = payload.replace(/\$timeTo/g, range.to.valueOf().toString());
+      payload = payload.replace(/\$timeFrom/g, range.from.toISOString());
+      payload = payload.replace(/\$timeTo/g, range.to.toISOString());
     }
 
     payload = Object(_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__["getTemplateSrv"])().replace(payload, scopedVars); //console.log(payload);
@@ -2236,7 +2242,7 @@ function (_super) {
     return this.postQuery(query, payload);
   };
 
-  DataSource.getDocs = function (resultsData, dataPath) {
+  DataSource.getDocs = function (resultsData, dataPath, mapFunction) {
     var e_1, _a;
 
     if (!resultsData) {
@@ -2270,7 +2276,13 @@ function (_super) {
     var docs = [];
 
     var pushDoc = function pushDoc(originalDoc) {
-      docs.push(Object(_util__WEBPACK_IMPORTED_MODULE_6__["flatten"])(originalDoc));
+      //
+      if (mapFunction && mapFunction !== '') {
+        var transform = new Function('input', mapFunction);
+        docs.push(transform(originalDoc));
+      } else {
+        docs.push(Object(_util__WEBPACK_IMPORTED_MODULE_6__["flatten"])(originalDoc));
+      }
     };
 
     if (Array.isArray(data)) {
@@ -2350,7 +2362,8 @@ function (_super) {
               var dataPathArray = DataSource.getDataPathArray(res.query.dataPath);
               var _g = res.query,
                   groupBy = _g.groupBy,
-                  aliasBy = _g.aliasBy;
+                  aliasBy = _g.aliasBy,
+                  mapFunction = _g.mapFunction;
               var split = groupBy.split(',');
               var groupByList = [];
 
@@ -2378,7 +2391,7 @@ function (_super) {
               try {
                 for (var dataPathArray_1 = (e_5 = void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(dataPathArray)), dataPathArray_1_1 = dataPathArray_1.next(); !dataPathArray_1_1.done; dataPathArray_1_1 = dataPathArray_1.next()) {
                   var dataPath = dataPathArray_1_1.value;
-                  var docs = DataSource.getDocs(res.results.data, dataPath);
+                  var docs = DataSource.getDocs(res.results.data, dataPath, mapFunction);
                   var dataFrameMap = new Map();
 
                   try {
@@ -2548,7 +2561,8 @@ function (_super) {
           try {
             for (var dataPathArray_2 = (e_10 = void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(dataPathArray)), dataPathArray_2_1 = dataPathArray_2.next(); !dataPathArray_2_1.done; dataPathArray_2_1 = dataPathArray_2.next()) {
               var dataPath = dataPathArray_2_1.value;
-              var docs = DataSource.getDocs(res.results.data, dataPath);
+              var mapFunction = res.query.mapFunction;
+              var docs = DataSource.getDocs(res.results.data, dataPath, mapFunction);
 
               try {
                 for (var docs_2 = (e_11 = void 0, Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__values"])(docs)), docs_2_1 = docs_2.next(); !docs_2_1.done; docs_2_1 = docs_2.next()) {
@@ -2770,6 +2784,15 @@ function (_super) {
       }));
     };
 
+    _this.onMapFunctionTextChange = function (event) {
+      var _a = _this.props,
+          onChange = _a.onChange,
+          query = _a.query;
+      onChange(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])(Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__assign"])({}, query), {
+        mapFunction: event.target.value
+      }));
+    };
+
     return _this;
   }
 
@@ -2780,7 +2803,8 @@ function (_super) {
     var queryText = query.queryText,
         dataPath = query.dataPath,
         groupBy = query.groupBy,
-        aliasBy = query.aliasBy;
+        aliasBy = query.aliasBy,
+        mapFunction = query.mapFunction;
     return react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, null, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["QueryField"], {
       query: queryText || '',
       onChange: this.onChangeQuery,
@@ -2812,6 +2836,15 @@ function (_super) {
       onChange: this.onAliasByTextChange,
       label: "Alias by",
       tooltip: "The formattable text to alias by. Use $field_<field name> to replace with the value of a field, or $fieldName to replace with the name of the field"
+    })), react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
+      className: 'gf-form'
+    }, react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_3__["LegacyForms"].FormField, {
+      labelWidth: 8,
+      inputWidth: 24,
+      value: mapFunction || '',
+      onChange: this.onMapFunctionTextChange,
+      label: "Map function",
+      tooltip: "A custom javascript function to map the resulting query document to a simple time-value object."
     })));
   };
 
